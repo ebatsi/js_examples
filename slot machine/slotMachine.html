@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Slot Machine</title>
+<style type="text/css">
+#wrapper{
+	height:300px;
+	width:405px; 
+	background-color:#E6E6E6; 
+	margin: 0 auto; 
+	border-radius:3px;
+	border: 1px solid red;
+	font-family:'Lucida Casual', 'Comic Sans MS';
+}
+#appName{
+	/*text-align:center;*/
+	text-align:left;
+	margin-left:10px;
+	font-weight:bold;
+	color:red;
+	font-size:55px;
+}
+.box{
+	text-align:center; 
+	font-size:100px;
+	float:left; 
+	width:120px;
+	height:120px;
+	background-color:white;
+	border-radius: 3px;
+	border: 1px solid grey;
+}
+#playButton{
+	color:white;
+	background-color:black;
+	float:right; 
+	width: 90px;
+	height: 45px !important;
+	display: block; 
+	-webkit-appearance: none;
+	border-radius: 5px;
+	margin: 21px 10px;
+	font-family:'Lucida Casual', 'Comic Sans MS'; 
+	font-size:20px;
+}
+#playButton:hover{
+	cursor:pointer;
+	color:red;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+<div id="appName">Slot Machine</div>
+<div class="box" id="box1" style="margin:10px;">1</div>
+<div class="box" id="box2" style="margin-top: 10px;">2</div>
+<div class="box" id="box3" style="margin-top: 10px;margin-left: 10px;">3</div>
+<input id="playButton" type="button" onclick="playerButtonClicked()" value="PLAY" />
+</div>
+<script>	
+var rollScreens = function(screenHolderName, numOfScreens, onComplete) {
+	var rollScreen = function(numOfScreen, maxRolling, currentRollCount) {
+		var screen = document.getElementById(screenHolderName + numOfScreen);
+		var newNum = Math.floor(Math.random() * (3 - 1 + 1)) + 1;
+
+		screen.innerHTML = newNum;
+			
+		currentRollCount = currentRollCount + 1;
+		if (currentRollCount < maxRolling) {
+			var rerun = function() {	
+				rollScreen(numOfScreen, maxRolling, currentRollCount);
+			}
+				
+			setTimeout(rerun, 110);
+		} else {
+			console.log("WTF? " + numOfScreen  + " - " + numOfScreens); 
+			if (numOfScreen == numOfScreens)
+				onComplete();
+		}
+	}
+		
+	for (i=1; i<=numOfScreens; i++) {
+		rollScreen(i, (1 * i), 0);
+	}
+}
+var checkIfWin = function(){
+	var screen1Value = document.getElementById("box1").innerHTML;
+	var screen2Value = document.getElementById("box2").innerHTML;
+	var screen3Value = document.getElementById("box3").innerHTML;
+	console.log(screen1Value + ' -- ' + screen2Value + ' -- ' + screen3Value)
+	if (screen1Value == screen2Value && 
+		screen1Value == screen3Value) {
+		alert("You are the big winner of the day!");
+	} else {
+		alert("Sorry...Try again!");
+	}
+}
+
+var playerButtonClicked = function() {
+	rollScreens("box", 3, checkIfWin);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>XOX Game</title>
+<style 'type=text/css'>
+#gameContainer{
+	width:40%;
+	height:40%;
+	margin: 0 auto;
+	background-color:#E6E6E6;
+	border-radius:5px;
+	box-shadow: 3px 3px 2px #848484;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+#header{
+	height:12.5%;
+	border-bottom:1px solid grey;
+	position:relative;
+}
+
+#title{
+	height:50%;
+	text-align:center;
+	font-size:1.875em;
+}
+
+#notificationArea{
+	height:50%; 
+	text-align:center;
+	font-size:0.9375em;
+	top:-11%;
+	position:relative;
+}
+
+#gameScreen{
+	height:75%;
+}
+
+.gameCell{
+	padding:3.75% 0;
+	width:33%;
+	float:left;
+	border-right: 0.033em dashed grey;
+	border-bottom: 0.033em dashed grey;
+	text-align:center;
+	font-size:3.75em;
+}
+
+.gameCell.right{
+	border-right:0em;
+}
+
+.gameCell.bottom{
+	border-bottom:0em;
+}
+
+.clearFloat{
+	clear:both;
+}
+
+#footer{
+	height:12.5%;
+	border-top:1px solid grey;
+}
+
+#startGameBttn, #endGameBttn{
+    background: #2E2E2E;
+    color: #FFF;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: solid 1px grey;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+    -webkit-transition-duration: 0.2s;
+    -moz-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    float:right;	
+	font-size:18px;
+	margin-right:5px;
+	margin-top:10px;
+	margin-bottom:9px;
+ }
+ 
+#endGameBttn:hover {
+    background: #FF0000;
+}
+
+#startGameBttn:hover {
+	background:#31B404;
+}
+</style>
+</head>
+<body onload = 'initGameUI()'>
+<div id='gameContainer'>
+	<div id='header'>
+		<div id='title'>XOX Game</div>
+		<div id='notificationArea'>&nbsp;</div>
+	</div>
+	<div id='gameScreen'></div>
+	<div id='footer'>
+		<input id='endGameBttn' type='button' value='End Game' onclick='endGame()'/>
+		<input id='startGameBttn' type='button' value='Start Game' onclick='startGame()'/>
+		<div style='clear: both;'></div>
+
+	</div>	
+</div>
+
+<script type='text/javascript'>
+
+var Player = function(theName, theSymbol, theIsAI) { //Symbol = X or O
+    this.name = theName;
+    this.symbol = theSymbol;
+    this.IsAI = theIsAI;
+}
+
+var players = new Array();
+var playersTurn = 0;
+
+var AIPlayerPlay = function() {
+	var gameCells = document.getElementsByClassName('gameCell');
+	var activeCells = new Array();
+	for (i=0; i<gameCells.length; i++) {
+		if (gameCells[i].innerHTML == '&nbsp;') {
+			activeCells.push(gameCells[i]);
+		}
+	}
+	
+	var AICell = activeCells[Math.floor(Math.random() * activeCells.length)];
+	gameCellClicked(AICell);
+}
+
+var initGameUI = function() {
+	for (i=1; i<10; i++) {
+		var gameCell = document.createElement('div');
+		gameCell.innerHTML = '&nbsp;';
+		gameCell.id = i;
+		gameCell.setAttribute('onclick' , 'gameCellClicked(this)');
+		
+		if (i==3 || i==6) { 
+			gameCell.className = 'gameCell right'; 
+		} else if (i==7 || i==8) { 
+			gameCell.className = 'gameCell bottom'; 
+		} else if (i == 9) { 
+			gameCell.className = 'gameCell bottom right'; 
+		} else { 
+			gameCell.className = 'gameCell'; 
+		}
+		
+		document.getElementById('gameScreen').appendChild(gameCell);
+	}
+	
+	clearFloatFor("gameScreen");
+}
+
+var clearFloatFor = function(elementID) {
+	var clearFix = document.createElement('div');
+	clearFix.className = 'clearFloat';
+	
+	document.getElementById(elementID).appendChild(clearFix);
+}
+
+var startGame = function() {
+	if (! liveGameExists()) {
+		var playVsPlayer = window.confirm("If you want to play against an other player hit 'ok', if you want to play against the computer hit 'cancel'");
+    	if (playVsPlayer) {
+    		players.push(new Player(prompt("Please enter the first player's name","First Player's Name"), 'X'));
+    		players.push(new Player(prompt("Please enter the second player's name","Second Player's Name"), 'O'));
+    	} else {
+    	  		players.push(new Player(prompt("Please enter your name","Player's Name"), 'X'));
+    		    players.push(new Player('Computer', 'O', true));
+		}
+		rollTurn(true);
+    		
+	}	
+}
+
+var liveGameExists = function() {
+	return players.length != 0;
+}
+
+var rollTurn = function(initialTurn) {
+	if (! initialTurn) {
+		playersTurn = playersTurn + 1;
+		if (playersTurn > 1) {
+			playersTurn = 0;
+		}
+	} else {
+		playersTurn = (Math.floor(Math.random() * 2)) ;
+	}
+
+	document.getElementById('notificationArea').innerHTML = players[playersTurn].name + "'s turn to play";
+	if (players[playersTurn].IsAI) {
+		AIPlayerPlay();
+	}
+}
+
+var endGame = function() {
+	document.getElementById('notificationArea').innerHTML = '&nbsp';
+	var gameScreen = document.getElementById('gameScreen');
+	gameScreen.innerHTML = '';
+	initGameUI();
+	players = new Array();
+}
+
+var gameCellClicked = function(cell) {
+	if (! liveGameExists()) {
+		alert("Please start a new game, no active game.");
+		return;
+	}
+	cell.innerHTML = players[playersTurn].symbol;
+	cell.onclick = null;
+	if (! checkForWinnersAndFinishGameIfNeeded()) {
+		rollTurn();
+	}
+}
+
+/*  checks if the current state has a winner 
+	if there is one, anounce him and end the game
+	returns true or false if winner exists or not respectively*/
+	
+var checkForWinnersAndFinishGameIfNeeded = function() {
+	var winnerExists = true;
+	var winningSymbol = '';
+	var NBSP_PLACEHOLDER = '&nbsp;'; 
+	
+	if (document.getElementById('1').innerHTML != NBSP_PLACEHOLDER &&
+		(document.getElementById('1').innerHTML == document.getElementById('2').innerHTML) && 
+		(document.getElementById('2').innerHTML == document.getElementById('3').innerHTML)) {
+		winningSymbol = document.getElementById('1').innerHTML;
+	} else if (document.getElementById('4').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('4').innerHTML == document.getElementById('5').innerHTML) && 
+			   (document.getElementById('5').innerHTML == document.getElementById('6').innerHTML)) {
+		winningSymbol = document.getElementById('4').innerHTML;
+	} else if (document.getElementById('7').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('7').innerHTML == document.getElementById('8').innerHTML) && 
+			   (document.getElementById('8').innerHTML == document.getElementById('9').innerHTML)) {
+		winningSymbol = document.getElementById('7').innerHTML;
+	} else if (document.getElementById('1').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('1').innerHTML == document.getElementById('4').innerHTML) && 
+			   (document.getElementById('4').innerHTML == document.getElementById('7').innerHTML)) {
+		winningSymbol = document.getElementById('1').innerHTML;
+	} else if (document.getElementById('2').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('2').innerHTML == document.getElementById('5').innerHTML) && 
+			   (document.getElementById('5').innerHTML == document.getElementById('8').innerHTML)) {
+		winningSymbol = document.getElementById('2').innerHTML;
+	} else if (document.getElementById('3').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('3').innerHTML == document.getElementById('6').innerHTML) && 
+			   (document.getElementById('6').innerHTML == document.getElementById('9').innerHTML)) {
+		winningSymbol = document.getElementById('3').innerHTML;
+	} else if (document.getElementById('1').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('1').innerHTML == document.getElementById('5').innerHTML) && 
+			   (document.getElementById('5').innerHTML == document.getElementById('9').innerHTML)) {
+		winningSymbol = document.getElementById('1').innerHTML;
+	} else if (document.getElementById('3').innerHTML != NBSP_PLACEHOLDER &&
+			   (document.getElementById('3').innerHTML == document.getElementById('5').innerHTML) && 
+			   (document.getElementById('5').innerHTML == document.getElementById('7').innerHTML)) {
+		winningSymbol = document.getElementById('3').innerHTML;
+	} else {
+		winnerExists = false;
+	}
+	
+	if (winnerExists) {
+		if (players[0].symbol == winningSymbol)
+			alert(players[0].name + ' won this round');
+		else
+			alert(players[1].name + ' won this round');
+			
+		endGame();
+	}
+	
+	return winnerExists;
+}	
+
+</script>
+</body>
+</html>
